@@ -26,3 +26,37 @@ exports.getAllReports = async (req, res) => {
         res.status(500).json({ message: 'Erreur lors de la récupération des signalements', error });
     }
 };
+// Obtenir un signalement par ID
+exports.getReportById = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const report = await Report.findById(id);
+        if (!report) return res.status(404).json({ message: 'Signalement introuvable' });
+        res.status(200).json(report);
+    } catch (error) {
+        res.status(500).json({ message: 'Erreur lors de la récupération du signalement', error });
+    }
+};
+// Mettre à jour le statut d'un signalement
+exports.updateReportStatus = async (req, res) => {
+    
+    if (req.user.role !== 'authority') {
+        return res.status(403).json({ message: 'Accès réservé aux autorités' });
+    }
+
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!['En attente', 'En cours', 'Résolu'].includes(status)) {
+        return res.status(400).json({ message: 'Statut invalide' });
+    }
+
+    try {
+        const report = await Report.findByIdAndUpdate(id, { status }, { new: true });
+        if (!report) return res.status(404).json({ message: 'Signalement introuvable' });
+        res.json({ message: 'Statut mis à jour', report });
+    } catch (err) {
+        res.status(500).json({ message: 'Erreur serveur', error: err.message });
+    }
+};
