@@ -1,13 +1,14 @@
 const mongoose = require('mongoose');
 
-const ReportSchema = new mongoose.Schema({
+const reportSchema = new mongoose.Schema({
     title: { type: String, required: true },
     category: { type: String, required: true },
     description: { type: String, required: true },
     image: { type: String },
     location: { type: String, required: true },
+    email: { type: String, required: true },
     status: { type: String, default: 'En attente' },
-    createdAt: { type: Date, default: Date.now },
-});
+    author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true } // Nouveau champ pour l'auteur
+}, { timestamps: true });
 
-module.exports = mongoose.model('Report', ReportSchema);
+module.exports = mongoose.model('Report', reportSchema);

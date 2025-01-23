@@ -8,9 +8,9 @@ const router = express.Router();
 // Configuration de multer pour gérer les fichiers
 const upload = multer({ dest: 'uploads/' });
 
-router.post('/reports', upload.single('image'), createReport);
+router.post('/reports',authMiddleware, upload.single('image'), createReport);
 router.get('/reports', authMiddleware, getAllReports);
-router.get('/reports/:id', authMiddleware, getReportById); // Nouvelle route pour obtenir un signalement par ID
+router.get('/reports/:id', authMiddleware, getReportById);
 
 router.patch('/reports/:id/status', authMiddleware, updateReportStatus);
 
