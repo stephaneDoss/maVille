@@ -1,10 +1,21 @@
 const Report = require('../models/Report');
 const transporter = require('../config/mailer');
+const fs = require('fs');
+const path = require('path');
+
+// Charger les catégories à partir du fichier JSON
+const categoriesPath = path.join(__dirname, '../../data/categories.json');
+const categories = JSON.parse(fs.readFileSync(categoriesPath, 'utf8')).categories;
 
 // Créer un signalement
 exports.createReport = async (req, res) => {
     if (!req.user) {
         return res.status(401).json({ message: 'Utilisateur non authentifié.' });
+    }
+
+    // Vérifier si la catégorie fournie est valide
+    if (!categories.includes(req.body.category)) {
+        return res.status(400).json({ message: 'Catégorie invalide.' });
     }
 
     try {
@@ -15,7 +26,9 @@ exports.createReport = async (req, res) => {
             image: req.file ? req.file.path : '',
             location: req.body.location,
             email: req.user.email,
-            author: req.user._id // Associer l'auteur au signalement
+            author: req.user._id,
+            latitude: req.body.latitude,
+            longitude: req.body.longitude
         });
         await newReport.save();
 
@@ -39,7 +52,6 @@ exports.createReport = async (req, res) => {
         res.status(500).json({ message: 'Erreur lors de la création du signalement', error });
     }
 };
-
 // Mettre à jour le statut d'un signalement
 exports.updateReportStatus = async (req, res) => {
     if (req.user.role !== 'authority') {

@@ -8,7 +8,9 @@ const reportSchema = new mongoose.Schema({
     location: { type: String, required: true },
     email: { type: String, required: true },
     status: { type: String, default: 'En attente' },
-    author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true } // Nouveau champ pour l'auteur
+    author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Champ pour l'auteur
+    latitude: { type: Number, required: true },
+    longitude: { type: Number, required: true }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Report', reportSchema);
