@@ -5,6 +5,7 @@ const connectDB = require('./config/database');
 const reportRoutes = require('./routes/reportRoutes');
 const authRoutes = require('./routes/auth');
 require('dotenv').config();
+const swaggerSetup = require('./config/swagger');
 
 const app = express();
 
@@ -16,5 +17,6 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use('/api', reportRoutes);
 app.use('/api/auth', authRoutes);
-
+// Configurer Swagger
+swaggerSetup(app);
 module.exports = app;
