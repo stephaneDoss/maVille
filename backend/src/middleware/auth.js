@@ -9,7 +9,7 @@ const authMiddleware = async (req, res, next) => {
     const token = authHeader.replace('Bearer ', '');
 
     try {
-        const decoded = jwt.verify(token, '9ce5891af6c449eca79cde419fd83fe5d7c53fea98c632a0f4fdc61bb715d953'); // Remplacez par votre secret JWT
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user = await User.findById(decoded.userId);
         if (!user) {
             return res.status(401).json({ message: 'Utilisateur non trouvé.' });

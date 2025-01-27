@@ -34,7 +34,7 @@ exports.createReport = async (req, res) => {
 
         // Envoyer un email de confirmation
         const mailOptions = {
-            from: 'votre_email@gmail.com',
+            from: process.env.EMAIL_USER,
             to: newReport.email,
             subject: 'Confirmation de signalement',
             text: `Votre signalement a été créé avec succès. Titre: ${newReport.title}`
@@ -71,7 +71,7 @@ exports.updateReportStatus = async (req, res) => {
 
         // Envoyer un email de mise à jour de statut
         const mailOptions = {
-            from: 'stephmoro23@gmail.com',
+            from: process.env.EMAIL_USER,
             to: report.email,
             subject: 'Mise à jour du statut de votre signalement',
             text: `Le statut de votre signalement a été mis à jour: ${status}`
@@ -118,37 +118,32 @@ exports.getAllReports = async (req, res) => {
         res.status(500).json({ message: 'Erreur lors de la récupération des signalements', error });
     }
 };
-// Obtenir un signalement par ID
-// exports.getReportById = async (req, res) => {
-//     const { id } = req.params;
 
-//     try {
-//         const report = await Report.findById(id);
-//         if (!report) return res.status(404).json({ message: 'Signalement introuvable' });
-//         res.status(200).json(report);
-//     } catch (error) {
-//         res.status(500).json({ message: 'Erreur lors de la récupération du signalement', error });
-//     }
-// };
-// Mettre à jour le statut d'un signalement
-// exports.updateReportStatus = async (req, res) => {
-    
-//     if (req.user.role !== 'authority') {
-//         return res.status(403).json({ message: 'Accès réservé aux autorités' });
-//     }
+// Obtenir les statistiques des signalements
+exports.getReportStatistics = async (req, res) => {
+    if (req.user.role !== 'authority') {
+        return res.status(403).json({ message: 'Accès réservé aux autorités' });
+    }
 
-//     const { id } = req.params;
-//     const { status } = req.body;
+    try {
+        const totalReportsByCategory = await Report.aggregate([
+            { $group: { _id: '$category', count: { $sum: 1 } } }
+        ]);
 
-//     if (!['En attente', 'En cours', 'Résolu'].includes(status)) {
-//         return res.status(400).json({ message: 'Statut invalide' });
-//     }
+        const geographicDistribution = await Report.aggregate([
+            { $group: { _id: { latitude: '$latitude', longitude: '$longitude' }, count: { $sum: 1 } } }
+        ]);
 
-//     try {
-//         const report = await Report.findByIdAndUpdate(id, { status }, { new: true });
-//         if (!report) return res.status(404).json({ message: 'Signalement introuvable' });
-//         res.json({ message: 'Statut mis à jour', report });
-//     } catch (err) {
-//         res.status(500).json({ message: 'Erreur serveur', error: err.message });
-//     }
-// };
+        const statusDistribution = await Report.aggregate([
+            { $group: { _id: '$status', count: { $sum: 1 } } }
+        ]);
+
+        res.status(200).json({
+            totalReportsByCategory,
+            geographicDistribution,
+            statusDistribution
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Erreur lors de la récupération des statistiques', error });
+    }
+};
